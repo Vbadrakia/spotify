@@ -151,13 +151,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildListTile({
     required String title,
-    required String subtitle,
+    String? subtitle,
     Widget? trailing,
     required VoidCallback onTap,
   }) {
     return ListTile(
       title: Text(title),
-      subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary)),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(color: AppColors.textSecondary)) : null,
       trailing: trailing,
       onTap: onTap,
     );

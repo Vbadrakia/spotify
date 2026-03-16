@@ -46,6 +46,12 @@ class AuthService {
     return User.fromJson(response.data['user'] ?? response.data);
   }
 
+  Future<void> setToken(String token) async {
+    await _api.setToken(token);
+  }
+
+  bool get hasToken => _api.hasToken;
+
   Future<void> logout() async {
     await _api.clearToken();
   }

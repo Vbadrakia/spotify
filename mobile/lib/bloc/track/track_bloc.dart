@@ -151,7 +151,7 @@ class LyricsLoading extends TrackState {}
 
 class LyricsLoaded extends TrackState {
   final String lyrics;
-  LyricsLoaded(this.lyrics);
+  const LyricsLoaded(this.lyrics);
   @override
   List<Object?> get props => [lyrics];
 }
