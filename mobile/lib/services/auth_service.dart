@@ -16,6 +16,13 @@ class AuthService {
       'password': password,
       'name': name,
     });
+    
+    // Store tokens
+    if (response.data['accessToken'] != null) {
+      await _api.setToken(response.data['accessToken']);
+      await _api.setRefreshToken(response.data['refreshToken']);
+    }
+    
     return response.data;
   }
 
@@ -27,6 +34,13 @@ class AuthService {
       'email': email,
       'password': password,
     });
+    
+    // Store tokens
+    if (response.data['accessToken'] != null) {
+      await _api.setToken(response.data['accessToken']);
+      await _api.setRefreshToken(response.data['refreshToken']);
+    }
+    
     return response.data;
   }
 

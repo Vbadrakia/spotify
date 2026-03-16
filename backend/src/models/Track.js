@@ -48,5 +48,9 @@ const trackSchema = new mongoose.Schema({
 });
 
 trackSchema.index({ title: 'text', artist: 'text', album: 'text' });
+trackSchema.index({ uploadedBy: 1, createdAt: -1 });
+trackSchema.index({ playCount: -1 });
+trackSchema.index({ artist: 1 });
+trackSchema.index({ album: 1 });
 
 module.exports = mongoose.model('Track', trackSchema);

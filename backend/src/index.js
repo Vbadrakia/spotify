@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const helmet = require('helmet');
 
 const authRoutes = require('./routes/auth');
 const trackRoutes = require('./routes/tracks');
@@ -11,10 +12,30 @@ const favoriteRoutes = require('./routes/favorites');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Security middleware
+app.use(helmet());
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:8080'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400, // 24 hours
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path) => {
+    // Prevent directory listing
+    if (path.endsWith('/')) {
+      res.setHeader('X-Frame-Options', 'DENY');
+    }
+    // Set cache control for static files
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+  }
+}));
 
 // Routes
 app.use('/api/auth', authRoutes);

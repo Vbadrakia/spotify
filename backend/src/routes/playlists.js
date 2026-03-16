@@ -1,8 +1,30 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const Playlist = require('../models/Playlist');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Validation middleware
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: 'Validation error', errors: errors.array() });
+  }
+  next();
+};
+
+// Playlist validation rules
+const playlistValidation = [
+  body('name').trim().notEmpty().withMessage('Name is required')
+    .isLength({ max: 100 }).withMessage('Name must be less than 100 characters'),
+  body('description').optional().trim().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
+];
+
+const trackValidation = [
+  body('trackId').notEmpty().withMessage('Track ID is required')
+    .isMongoId().withMessage('Invalid track ID'),
+];
 
 // Get all playlists for user
 router.get('/', auth, async (req, res) => {

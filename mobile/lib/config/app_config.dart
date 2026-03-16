@@ -1,5 +1,7 @@
 class AppConfig {
-  static const String baseUrl = 'http://localhost:3000';
+  // Use environment-based configuration
+  // For production, set this to your production API URL
+  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:3000');
   static const String apiUrl = '$baseUrl/api';
   
   static String resolveUrl(String? path) {

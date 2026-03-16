@@ -5,11 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final Dio _dio;
   final SharedPreferences _prefs;
+  final Function()? _onUnauthorized;
   
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
+  static const String _refreshTokenKey = 'refresh_token';
 
-  ApiService(this._dio, this._prefs) {
+  ApiService(this._dio, this._prefs, {Function()? onUnauthorized}) : _onUnauthorized = onUnauthorized {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         final token = _prefs.getString(_tokenKey);
@@ -18,11 +20,41 @@ class ApiService {
         }
         return handler.next(options);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         if (error.response?.statusCode == 401) {
-          // Token expired, clear auth data
-          _prefs.remove(_tokenKey);
-          _prefs.remove(_userKey);
+          // Token expired, try to refresh
+          final refreshToken = _prefs.getString(_refreshTokenKey);
+          if (refreshToken != null) {
+            try {
+              // Call refresh endpoint
+              final response = await _dio.post(
+                '/auth/refresh',
+                data: {'refreshToken': refreshToken},
+                options: Options(headers: {'Authorization': ''}), // Don't send old token
+              );
+              
+              if (response.statusCode == 200 && response.data['accessToken'] != null) {
+                // Save new token
+                await _prefs.setString(_tokenKey, response.data['accessToken']);
+                
+                // Retry original request
+                error.requestOptions.headers['Authorization'] = 'Bearer ${response.data['accessToken']}';
+                final retryResponse = await _dio.fetch(error.requestOptions);
+                return handler.resolve(retryResponse);
+              }
+            } catch (e) {
+              // Refresh failed, clear auth data
+              await _prefs.remove(_tokenKey);
+              await _prefs.remove(_refreshTokenKey);
+              await _prefs.remove(_userKey);
+              _onUnauthorized?.call();
+            }
+          } else {
+            // No refresh token, clear auth data
+            await _prefs.remove(_tokenKey);
+            await _prefs.remove(_userKey);
+            _onUnauthorized?.call();
+          }
         }
         return handler.next(error);
       },
@@ -38,8 +70,21 @@ class ApiService {
     return _prefs.getString(_tokenKey);
   }
 
+  Future<void> setRefreshToken(String? token) async {
+    if (token != null) {
+      await _prefs.setString(_refreshTokenKey, token);
+    } else {
+      await _prefs.remove(_refreshTokenKey);
+    }
+  }
+
+  String? getRefreshToken() {
+    return _prefs.getString(_refreshTokenKey);
+  }
+
   Future<void> clearToken() async {
     await _prefs.remove(_tokenKey);
+    await _prefs.remove(_refreshTokenKey);
     await _prefs.remove(_userKey);
   }
 

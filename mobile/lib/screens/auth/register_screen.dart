@@ -98,6 +98,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your name';
                       }
+                      if (value.length < 2 || value.length > 50) {
+                        return 'Name must be between 2 and 50 characters';
+                      }
+                      if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                        return 'Name can only contain letters, numbers, and spaces';
+                      }
                       return null;
                     },
                   ),
@@ -145,8 +151,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
+                      }
+                      if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$').hasMatch(value)) {
+                        return 'Password must contain uppercase, lowercase, and a number';
                       }
                       return null;
                     },

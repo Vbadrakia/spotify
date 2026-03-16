@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { body, validationResult } = require('express-validator');
 const Track = require('../models/Track');
 const User = require('../models/User');
 const { auth, optionalAuth } = require('../middleware/auth');
@@ -37,21 +38,40 @@ const upload = multer({
   },
 });
 
+// Validation middleware
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: 'Validation error', errors: errors.array() });
+  }
+  next();
+};
+
+// Track upload validation rules
+const trackUploadValidation = [
+  body('title').trim().notEmpty().withMessage('Title is required')
+    .isLength({ max: 200 }).withMessage('Title must be less than 200 characters'),
+  body('artist').trim().notEmpty().withMessage('Artist is required')
+    .isLength({ max: 200 }).withMessage('Artist must be less than 200 characters'),
+  body('album').optional().trim().isLength({ max: 200 }).withMessage('Album must be less than 200 characters'),
+  body('lyrics').optional().trim().isLength({ max: 10000 }).withMessage('Lyrics must be less than 10000 characters'),
+];
+
 // Get all tracks with pagination
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
-    
+
     const tracks = await Track.find()
       .populate('uploadedBy', 'name avatar')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-    
+
     const total = await Track.countDocuments();
-    
+
     res.json({
       tracks,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
@@ -95,7 +115,7 @@ router.get('/search', optionalAuth, async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) return res.json({ tracks: [] });
-    
+
     const tracks = await Track.find({
       $or: [
         { title: { $regex: q, $options: 'i' } },
@@ -118,11 +138,11 @@ router.get('/:id/lyrics', async (req, res) => {
     if (!track) {
       return res.status(404).json({ message: 'Track not found' });
     }
-    res.json({ 
+    res.json({
       trackId: track._id,
       title: track.title,
       artist: track.artist,
-      lyrics: track.lyrics 
+      lyrics: track.lyrics
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching lyrics', error: error.message });
@@ -136,12 +156,12 @@ router.get('/:id/fetch-lyrics', async (req, res) => {
     if (!track) {
       return res.status(404).json({ message: 'Track not found' });
     }
-    
+
     // In production, you would call a lyrics API like Genius, Musixmatch, etc.
     // For now, return a placeholder
-    res.json({ 
+    res.json({
       message: 'Lyrics fetch not implemented. Please add lyrics manually.',
-      trackId: track._id 
+      trackId: track._id
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching lyrics', error: error.message });
@@ -153,14 +173,14 @@ router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const track = await Track.findById(req.params.id)
       .populate('uploadedBy', 'name avatar');
-    
+
     if (!track) {
       return res.status(404).json({ message: 'Track not found' });
     }
-    
+
     track.playCount += 1;
     await track.save();
-    
+
     if (req.userId) {
       const user = await User.findById(req.userId);
       let recent = user.recentlyPlayed || [];
@@ -170,7 +190,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       user.recentlyPlayed = recent;
       await user.save();
     }
-    
+
     res.json({ track });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching track', error: error.message });
@@ -178,20 +198,20 @@ router.get('/:id', optionalAuth, async (req, res) => {
 });
 
 // Upload track with lyrics
-router.post('/', auth, upload.fields([
+router.post('/', auth, trackUploadValidation, validate, upload.fields([
   { name: 'audio', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const { title, artist, album, lyrics } = req.body;
-    
+
     if (!req.files || !req.files['audio']) {
       return res.status(400).json({ message: 'Audio file is required' });
     }
-    
+
     const audioFile = req.files['audio'][0];
     const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
-    
+
     const track = new Track({
       title,
       artist,
@@ -201,9 +221,9 @@ router.post('/', auth, upload.fields([
       artwork: artworkFile ? `/uploads/${artworkFile.filename}` : null,
       uploadedBy: req.userId,
     });
-    
+
     await track.save();
-    
+
     res.status(201).json({
       message: 'Track uploaded successfully',
       track,
@@ -217,24 +237,24 @@ router.post('/', auth, upload.fields([
 router.put('/:id', auth, async (req, res) => {
   try {
     const { title, artist, album, artwork, lyrics } = req.body;
-    
+
     const track = await Track.findOne({
       _id: req.params.id,
       uploadedBy: req.userId,
     });
-    
+
     if (!track) {
       return res.status(404).json({ message: 'Track not found or unauthorized' });
     }
-    
+
     if (title) track.title = title;
     if (artist) track.artist = artist;
     if (album !== undefined) track.album = album;
     if (artwork) track.artwork = artwork;
     if (lyrics !== undefined) track.lyrics = lyrics;
-    
+
     await track.save();
-    
+
     res.json({ message: 'Track updated', track });
   } catch (error) {
     res.status(500).json({ message: 'Error updating track', error: error.message });
@@ -248,18 +268,18 @@ router.delete('/:id', auth, async (req, res) => {
       _id: req.params.id,
       uploadedBy: req.userId,
     });
-    
+
     if (!track) {
       return res.status(404).json({ message: 'Track not found or unauthorized' });
     }
-    
+
     const audioPath = path.join(__dirname, '../../', track.audioUrl);
     if (fs.existsSync(audioPath)) {
       fs.unlinkSync(audioPath);
     }
-    
+
     await track.deleteOne();
-    
+
     res.json({ message: 'Track deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting track', error: error.message });
