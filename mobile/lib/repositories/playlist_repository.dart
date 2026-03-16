@@ -1,5 +1,5 @@
 import '../services/playlist_service.dart';
-import '../../models/playlist_model.dart';
+import '../models/playlist_model.dart';
 
 class PlaylistRepository {
   final PlaylistService _playlistService;

@@ -1,5 +1,5 @@
 import 'api_service.dart';
-import '../../models/track_model.dart';
+import '../models/track_model.dart';
 
 class TrackService {
   final ApiService _api;

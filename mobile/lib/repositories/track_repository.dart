@@ -1,5 +1,5 @@
 import '../services/track_service.dart';
-import '../../models/track_model.dart';
+import '../models/track_model.dart';
 
 class TrackRepository {
   final TrackService _trackService;

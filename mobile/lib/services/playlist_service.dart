@@ -1,5 +1,5 @@
 import 'api_service.dart';
-import '../../models/playlist_model.dart';
+import '../models/playlist_model.dart';
 
 class PlaylistService {
   final ApiService _api;

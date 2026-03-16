@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../config/theme.dart';
-import '../../models/track_model.dart';
+import '../config/theme.dart';
+import '../models/track_model.dart';
 
 class TrackTile extends StatelessWidget {
   final Track track;

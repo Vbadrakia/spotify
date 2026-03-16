@@ -1,7 +1,7 @@
 import 'dart:convert';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
-import '../../models/user_model.dart';
+import '../models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
