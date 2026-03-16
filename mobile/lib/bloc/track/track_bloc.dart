@@ -134,14 +134,14 @@ class TrackSearching extends TrackState {
 class TrackSearchResults extends TrackState {
   final List<Track> results;
   final String query;
-  TrackSearchResults({required this.results, required this.query});
+  const TrackSearchResults({required this.results, required this.query});
   @override
   List<Object?> get props => [results, query];
 }
 
 class TrackError extends TrackState {
   final String message;
-  TrackError(this.message);
+  const TrackError(this.message);
   @override
   List<Object?> get props => [message];
 }
@@ -152,7 +152,7 @@ class TrackUploading extends TrackState {
 
 class TrackUploadSuccess extends TrackState {
   final Track track;
-  TrackUploadSuccess(this.track);
+  const TrackUploadSuccess(this.track);
   @override
   List<Object?> get props => [track];
 }
