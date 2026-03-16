@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,14 +47,17 @@ class ApiService {
 
   // User data
   Future<void> saveUserData(Map<String, dynamic> userData) async {
-    await _prefs.setString(_userKey, userData.toString());
+    await _prefs.setString(_userKey, json.encode(userData));
   }
 
   Map<String, dynamic>? getUserData() {
     final data = _prefs.getString(_userKey);
     if (data != null) {
-      // Parse the stored string back to map
-      return {};
+      try {
+        return json.decode(data) as Map<String, dynamic>;
+      } catch (_) {
+        return null;
+      }
     }
     return null;
   }
