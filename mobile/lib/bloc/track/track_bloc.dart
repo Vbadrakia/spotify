@@ -5,6 +5,7 @@ import '../../repositories/track_repository.dart';
 
 // Events
 abstract class TrackEvent extends Equatable {
+  const TrackEvent();
   @override
   List<Object?> get props => [];
 }
@@ -70,13 +71,18 @@ class LoadLyrics extends TrackEvent {
 
 // States
 abstract class TrackState extends Equatable {
+  const TrackState();
   @override
   List<Object?> get props => [];
 }
 
-class TrackInitial extends TrackState {}
+class TrackInitial extends TrackState {
+  const TrackInitial();
+}
 
-class TrackLoading extends TrackState {}
+class TrackLoading extends TrackState {
+  const TrackLoading();
+}
 
 class TrackLoaded extends TrackState {
   final List<Track> tracks;
@@ -121,7 +127,9 @@ class TrackLoaded extends TrackState {
   List<Object?> get props => [tracks, favorites, recentlyPlayed, popular, currentLyrics, hasMore, currentPage];
 }
 
-class TrackSearching extends TrackState {}
+class TrackSearching extends TrackState {
+  const TrackSearching();
+}
 
 class TrackSearchResults extends TrackState {
   final List<Track> results;
@@ -138,7 +146,9 @@ class TrackError extends TrackState {
   List<Object?> get props => [message];
 }
 
-class TrackUploading extends TrackState {}
+class TrackUploading extends TrackState {
+  const TrackUploading();
+}
 
 class TrackUploadSuccess extends TrackState {
   final Track track;
@@ -147,7 +157,9 @@ class TrackUploadSuccess extends TrackState {
   List<Object?> get props => [track];
 }
 
-class LyricsLoading extends TrackState {}
+class LyricsLoading extends TrackState {
+  const LyricsLoading();
+}
 
 class LyricsLoaded extends TrackState {
   final String lyrics;
@@ -160,7 +172,7 @@ class LyricsLoaded extends TrackState {
 class TrackBloc extends Bloc<TrackEvent, TrackState> {
   final TrackRepository _trackRepository;
 
-  TrackBloc(this._trackRepository) : super(TrackInitial()) {
+  TrackBloc(this._trackRepository) : super(const TrackInitial()) {
     on<LoadTracks>(_onLoadTracks);
     on<LoadMoreTracks>(_onLoadMoreTracks);
     on<SearchTracks>(_onSearchTracks);
@@ -174,7 +186,7 @@ class TrackBloc extends Bloc<TrackEvent, TrackState> {
   }
 
   Future<void> _onLoadTracks(LoadTracks event, Emitter<TrackState> emit) async {
-    emit(TrackLoading());
+    emit(const TrackLoading());
     try {
       final tracks = await _trackRepository.getTracks(page: 1);
       emit(TrackLoaded(tracks: tracks, hasMore: tracks.length >= 20));
@@ -205,7 +217,7 @@ class TrackBloc extends Bloc<TrackEvent, TrackState> {
       add(LoadTracks());
       return;
     }
-    emit(TrackSearching());
+    emit(const TrackSearching());
     try {
       final results = await _trackRepository.searchTracks(event.query);
       emit(TrackSearchResults(results: results, query: event.query));
@@ -215,7 +227,7 @@ class TrackBloc extends Bloc<TrackEvent, TrackState> {
   }
 
   Future<void> _onUploadTrack(UploadTrack event, Emitter<TrackState> emit) async {
-    emit(TrackUploading());
+    emit(const TrackUploading());
     try {
       final track = await _trackRepository.uploadTrack(
         title: event.title,
@@ -305,7 +317,7 @@ class TrackBloc extends Bloc<TrackEvent, TrackState> {
 
   Future<void> _onLoadLyrics(LoadLyrics event, Emitter<TrackState> emit) async {
     final currentState = state;
-    emit(LyricsLoading());
+    emit(const LyricsLoading());
     try {
       final lyrics = await _trackRepository.getLyrics(event.trackId);
       if (lyrics != null && lyrics.isNotEmpty) {
