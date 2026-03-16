@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../config/app_config.dart';
 
 class User extends Equatable {
   final String id;
@@ -20,7 +21,7 @@ class User extends Equatable {
       id: json['_id'] ?? json['id'] ?? '',
       email: json['email'] ?? '',
       name: json['name'] ?? '',
-      avatar: json['avatar'],
+      avatar: AppConfig.resolveUrl(json['avatar']),
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),

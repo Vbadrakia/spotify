@@ -12,7 +12,7 @@ const router = express.Router();
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
+    const uploadDir = path.join(__dirname, '../uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -178,20 +178,27 @@ router.get('/:id', optionalAuth, async (req, res) => {
 });
 
 // Upload track with lyrics
-router.post('/', auth, upload.single('audio'), async (req, res) => {
+router.post('/', auth, upload.fields([
+  { name: 'audio', maxCount: 1 },
+  { name: 'artwork', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { title, artist, album, lyrics } = req.body;
     
-    if (!req.file) {
+    if (!req.files || !req.files['audio']) {
       return res.status(400).json({ message: 'Audio file is required' });
     }
+    
+    const audioFile = req.files['audio'][0];
+    const artworkFile = req.files['artwork'] ? req.files['artwork'][0] : null;
     
     const track = new Track({
       title,
       artist,
       album,
       lyrics: lyrics || null,
-      audioUrl: `/uploads/${req.file.filename}`,
+      audioUrl: `/uploads/${audioFile.filename}`,
+      artwork: artworkFile ? `/uploads/${artworkFile.filename}` : null,
       uploadedBy: req.userId,
     });
     

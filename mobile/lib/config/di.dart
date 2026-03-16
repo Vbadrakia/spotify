@@ -15,6 +15,8 @@ import '../bloc/player/player_bloc.dart';
 import '../bloc/track/track_bloc.dart';
 import '../bloc/playlist/playlist_bloc.dart';
 
+import 'app_config.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
@@ -23,7 +25,7 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
   
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://localhost:3000/api',
+    baseUrl: AppConfig.apiUrl,
     connectTimeout: const Duration(seconds: 30),
     receiveTimeout: const Duration(seconds: 30),
     headers: {'Content-Type': 'application/json'},

@@ -98,17 +98,22 @@ class ApiService {
     return _dio.delete<T>(path, data: data, queryParameters: queryParameters, options: options);
   }
 
-  Future<Response<T>> uploadFile<T>(
+  Future<Response<T>> uploadFiles<T>(
     String path,
-    String filePath,
-    String fieldName, {
+    Map<String, String> files, {
     Map<String, dynamic>? data,
     void Function(int, int)? onSendProgress,
   }) async {
-    final formData = FormData.fromMap({
-      ...?data,
-      fieldName: await MultipartFile.fromFile(filePath),
-    });
+    final Map<String, dynamic> formDataMap = {...?data};
+    
+    for (var entry in files.entries) {
+      if (entry.value.isNotEmpty) {
+        formDataMap[entry.key] = await MultipartFile.fromFile(entry.value);
+      }
+    }
+
+    final formData = FormData.fromMap(formDataMap);
+    
     return _dio.post<T>(
       path,
       data: formData,

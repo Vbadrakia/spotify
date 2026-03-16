@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../config/app_config.dart';
 
 class Track extends Equatable {
   final String id;
@@ -35,8 +36,8 @@ class Track extends Equatable {
       title: json['title'] ?? '',
       artist: json['artist'] ?? 'Unknown Artist',
       album: json['album'],
-      artwork: json['artwork'],
-      audioUrl: json['audioUrl'] ?? json['audio_url'] ?? '',
+      artwork: AppConfig.resolveUrl(json['artwork']),
+      audioUrl: AppConfig.resolveUrl(json['audioUrl'] ?? json['audio_url']),
       duration: json['duration'] ?? 0,
       lyrics: json['lyrics'],
       uploadedBy: json['uploadedBy'] ?? json['uploaded_by'] ?? '',

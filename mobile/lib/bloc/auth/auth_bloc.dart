@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import '../../models/user_model.dart';
 import '../../repositories/auth_repository.dart';
 
@@ -90,6 +91,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<UpdateProfileRequested>(_onUpdateProfileRequested);
   }
 
+  String _getErrorMessage(dynamic e) {
+    if (e is DioException) {
+      if (e.response?.data != null && e.response?.data is Map) {
+        return e.response?.data['message'] ?? e.message ?? e.toString();
+      }
+      return e.message ?? e.toString();
+    }
+    return e.toString();
+  }
+
   Future<void> _onCheckAuthStatus(
     CheckAuthStatus event,
     Emitter<AuthState> emit,
@@ -127,7 +138,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(_getErrorMessage(e)));
     }
   }
 
@@ -145,7 +156,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(_getErrorMessage(e)));
     }
   }
 
@@ -171,7 +182,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         emit(AuthAuthenticated(user));
       } catch (e) {
-        emit(AuthError(e.toString()));
+        emit(AuthError(_getErrorMessage(e)));
       }
     }
   }

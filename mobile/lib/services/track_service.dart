@@ -36,10 +36,12 @@ class TrackService {
     String? artworkFilePath,
     String? lyrics,
   }) async {
-    final response = await _api.uploadFile(
+    final response = await _api.uploadFiles(
       '/tracks',
-      audioFilePath,
-      'audio',
+      {
+        'audio': audioFilePath,
+        if (artworkFilePath != null) 'artwork': artworkFilePath,
+      },
       data: {
         'title': title,
         'artist': artist,

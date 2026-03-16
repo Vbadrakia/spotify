@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -121,7 +122,7 @@ class _UploadTrackScreenState extends State<UploadTrackScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceVariant,
                       borderRadius: BorderRadius.circular(16),
-                      image: _artworkPath != null ? DecorationImage(image: AssetImage(_artworkPath!), fit: BoxFit.cover) : null,
+                      image: _artworkPath != null ? DecorationImage(image: FileImage(File(_artworkPath!)), fit: BoxFit.cover) : null,
                     ),
                     child: _artworkPath == null
                         ? const Column(mainAxisAlignment: MainAxisAlignment.center, children: [

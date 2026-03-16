@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'track_model.dart';
+import '../config/app_config.dart';
 
 class Playlist extends Equatable {
   final String id;
@@ -29,7 +30,7 @@ class Playlist extends Equatable {
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'],
-      artwork: json['artwork'],
+      artwork: AppConfig.resolveUrl(json['artwork']),
       tracks: json['tracks'] != null 
           ? (json['tracks'] as List).map((t) => Track.fromJson(t)).toList()
           : [],
